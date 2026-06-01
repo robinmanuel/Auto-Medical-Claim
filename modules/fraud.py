@@ -23,10 +23,10 @@ class FraudResult:
 # evaluator_fn receives the raw form_data dict + predicted_amount float → bool
 
 def _rule_high_claim(data: dict, amount: float) -> bool:
-    return amount > 50_000
+    return amount > 250_000
 
 def _rule_very_high_claim(data: dict, amount: float) -> bool:
-    return amount > 100_000
+    return amount > 500_000
 
 def _rule_smoker(data: dict, amount: float) -> bool:
     return str(data.get("smoker", "no")).lower() == "yes"
@@ -49,7 +49,7 @@ def _rule_no_exercise_smoker(data: dict, amount: float) -> bool:
     )
 
 def _rule_young_high_claim(data: dict, amount: float) -> bool:
-    return float(data.get("age", 30)) < 30 and amount > 40_000
+    return float(data.get("age", 30)) < 30 and amount > 200_000
 
 def _rule_high_dependents(data: dict, amount: float) -> bool:
     return int(data.get("no_of_dependents", 0)) >= 5
@@ -68,14 +68,14 @@ def _rule_combo_risk(data: dict, amount: float) -> bool:
 
 
 RULES = [
-    ("high_claim",           "Claim amount unusually high (>₹50k)",         12, _rule_high_claim),
-    ("very_high_claim",      "Claim amount extremely high (>₹1L)",           20, _rule_very_high_claim),
+    ("high_claim",           "Claim amount unusually high (>₹2.5L)",         12, _rule_high_claim),
+    ("very_high_claim",      "Claim amount extremely high (>₹5L)",           20, _rule_very_high_claim),
     ("smoker",               "Patient is a smoker",                           8, _rule_smoker),
     ("high_bp",              "High blood pressure reported",                  8, _rule_high_bp),
     ("diabetes",             "Diabetes diagnosis present",                    8, _rule_diabetes),
     ("multiple_hereditary",  "Multiple hereditary diseases listed",           10, _rule_multiple_hereditary),
     ("no_exercise_smoker",   "Non-exercising smoker",                         7, _rule_no_exercise_smoker),
-    ("young_high_claim",     "Young patient with high claim",                 10, _rule_young_high_claim),
+    ("young_high_claim",     "Young patient with high claim (>₹2L)",         10, _rule_young_high_claim),
     ("high_dependents",      "Unusually high number of dependents (≥5)",      5, _rule_high_dependents),
     ("extreme_bmi",          "Extreme BMI value (>40 or <16)",                7, _rule_extreme_bmi),
     ("combo_risk",           "Combined smoker + diabetes + high BP",          15, _rule_combo_risk),

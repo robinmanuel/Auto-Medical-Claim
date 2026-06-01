@@ -71,13 +71,41 @@ def _encode_input(data: dict) -> pd.DataFrame:
 
 
 def _risk_category(amount: float) -> tuple[str, str]:
-    """Return (label, colour) based on claim amount thresholds."""
-    if amount < 10_000:
+    """Return (label, colour) based on claim amount thresholds (in INR)."""
+    if amount < 50_000:
         return "Low Claim", "#22c55e"
-    elif amount < 30_000:
+    elif amount < 150_000:
         return "Medium Claim", "#f59e0b"
     else:
         return "High Claim", "#ef4444"
+
+
+def convert_to_indian_context(usd_prediction: float, input_df: pd.DataFrame) -> float:
+    """Convert USD prediction to Indian context with risk adjustments.
+    
+    Parameters
+    ----------
+    usd_prediction : float
+        The USD amount predicted by the model.
+    input_df : pd.DataFrame
+        Encoded feature DataFrame with smoker and diabetes columns.
+    
+    Returns
+    -------
+    float
+        Adjusted claim amount in INR.
+    """
+    factor = 0.06  # Tune between 0.05 to 0.08 based on local claim patterns
+    risk_multiplier = 1.0
+    
+    # Adjust multiplier based on risk factors
+    if input_df['smoker'].iloc[0] == 1:
+        risk_multiplier += 0.2
+    
+    if input_df['diabetes'].iloc[0] == 1:
+        risk_multiplier += 0.15
+    
+    return usd_prediction * factor * 83 * risk_multiplier
 
 
 class ClaimPredictor:
@@ -134,6 +162,10 @@ class ClaimPredictor:
             X = _encode_input(form_data)
             amount = float(self._model.predict(X)[0])
             amount = max(0.0, amount)          # clamp negatives
+        
+        # Convert to Indian context with risk adjustments
+        X = _encode_input(form_data)
+        amount = convert_to_indian_context(amount, X)
 
         label, color = _risk_category(amount)
         return {
