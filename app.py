@@ -379,12 +379,24 @@ with right_col:
             # 5. Approval
             vs = ver_report.overall_score
             fr = fraud_result.score
-            if vs >= 80 and fr < 40:
-                approval = "APPROVED"
-            elif fr > 70 or vs < 50:
-                approval = "REJECTED"
+            risk_label = pred["risk_label"]
+            
+            # Higher approval rate for low claims
+            if risk_label == "Low Claim":
+                if vs >= 70 and fr < 50:
+                    approval = "APPROVED"
+                elif fr > 75 or vs < 40:
+                    approval = "REJECTED"
+                else:
+                    approval = "UNDER REVIEW"
             else:
-                approval = "UNDER REVIEW"
+                # Standard thresholds for medium/high claims
+                if vs >= 80 and fr < 40:
+                    approval = "APPROVED"
+                elif fr > 70 or vs < 50:
+                    approval = "REJECTED"
+                else:
+                    approval = "UNDER REVIEW"
 
             st.session_state.update({
                 "predicted_amount":   pred["predicted_amount"],
@@ -447,9 +459,9 @@ with right_col:
                     "Claim Amount (Rs.)",
                     max_val=max_claim,
                     color_thresholds=[
-                        (0, 10_000, "#22c55e"),
-                        (10_000, 30_000, "#f59e0b"),
-                        (30_000, max_claim, "#ef4444"),
+                        (0, 50_000, "#22c55e"),
+                        (50_000, 150_000, "#f59e0b"),
+                        (150_000, max_claim, "#ef4444"),
                     ],
                 ),
                 use_container_width=True, config={"displayModeBar": False},
